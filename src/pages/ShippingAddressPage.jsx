@@ -67,7 +67,7 @@ const ShippingAddressPage = () => {
             };
 
             try {
-                const response = await fetch("http://localhost:8080/api/orders", {
+                const response = await fetch("http://kmua.com.mx/api/orders", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
@@ -106,7 +106,7 @@ const ShippingAddressPage = () => {
         if (items && items.length > 0) {
             const uuid = getOrCreateGuestId();
             
-            fetch("http://localhost:8080/api/orders/preview", {
+            fetch("http://kmua.com.mx/api/orders/preview", {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

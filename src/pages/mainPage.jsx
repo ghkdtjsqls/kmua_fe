@@ -15,7 +15,7 @@ const MainPage = () => {
     const [products, setProducts] = useState([]);
 
     useEffect(() => {
-        fetch("http://localhost:8080/api/products")
+        fetch("http://kmua.com.mx/api/products")
         .then(res => res.json())
         .then(data => {
             setProducts(data);
