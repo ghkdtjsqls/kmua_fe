@@ -30,9 +30,18 @@ const ShippingAddressPage = () => {
 
     const [submitted, setSubmitted] = useState(false);
 
-    const isFormValid = Object.values(formData).every(value => value.trim() !== "");
+    const requiredFields = [
+        'phone', 'email', 'country', 'firstName', 
+        'lastName', 'zipCode', 'state', 'city', 
+        'district', 'streetAddress'
+    ];
 
-    const isError = (field) => submitted && !formData[field].trim();
+    const isFormValid = requiredFields.every(field => formData[field].trim() !== "");
+
+    const isError = (field) => {
+        if (field === 'instaId' || field === 'detailAddress') return false;
+        return submitted && !formData[field].trim();
+    };
 
     const handleInputChange = (e) => {
         const { name, value } = e.target;
@@ -155,7 +164,7 @@ const ShippingAddressPage = () => {
                     type="text"
                     name="instaId"
                     placeholder="ID de Instagram"
-                    value={formData.instagram}
+                    value={formData.instaId}
                     onChange={handleInputChange}
                     className={css(styles.input, isError('instaId') && styles.errorInput)}
                 />
