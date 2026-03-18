@@ -24,7 +24,7 @@ const CategoryPage = () => {
     const categoryName = currentSubcategory?.id || subcategory;
 
     useEffect(() => {
-        fetch(`http://kmua.com.mx/api/products/category/${categoryName}`)
+        fetch(`https://kmua.com.mx/api/products/category/${categoryName}`)
             .then(res => res.json())
             .then(data => {
             setProducts(data);

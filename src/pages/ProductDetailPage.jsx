@@ -36,7 +36,7 @@ const ProductDetailPage = () => {
 
     const selectedOption = product?.options?.find(opt => opt.optionId === selectedOptionId);
         useEffect(() => {
-            fetch(`http://kmua.com.mx/api/products/${productCode}`)
+            fetch(`https://kmua.com.mx/api/products/${productCode}`)
             .then(res => res.json())
             .then(data => {
                 setProduct(data);
