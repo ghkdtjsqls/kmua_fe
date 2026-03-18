@@ -8,190 +8,208 @@ import SideMenu from '../components/SideMenu';
 import SearchComponent from '../components/SearchComponent';
 import CartComponent from '../components/CartComponent';
 import { ANIMATION_DURATION, ANIMATION_EASING } from '../hooks/useAnimation';
+import useCart from '../hooks/useCart';
+
 
 const ProductDetailPage = () => {
-  const { id } = useParams();
-  const [menuOpen, setMenuOpen] = useState(false);
-  const [searchOpen, setSearchOpen] = useState(false);
-  const [cartOpen, setCartOpen] = useState(false);
-  const [cartItems, setCartItems] = useState([
-    {
-      id: 1,
-      name: 'Celadix RX131 Ampoule',
-      price: '52,000',
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1643379850623-7eb6442cd262?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWF1dHklMjBjb3NtZXRpY3MlMjBjcmVhbSUyMGJvdHRsZXxlbnwxfHx8fDE3NjYzMDczNzN8MA&ixlib=rb-4.1.0&q=80&w=1080'
-    },
-    {
-      id: 2,
-      name: 'Round Lab Birch Moisturizing Toner',
-      price: '52,000',
-      quantity: 1,
-      image: 'https://images.unsplash.com/photo-1718490953028-021d352b14fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxza2luY2FyZSUyMHByb2R1Y3RzJTIwYmVpZ2V8ZW58MXx8fHwxNzY2MzA3MzczfDA&ixlib=rb-4.1.0&q=80&w=1080'
+    const { productCode } = useParams();
+    const [product, setProduct] = useState([]);
+    const [selectedOptionId, setSelectedOptionId] = useState(null);
+    const [menuOpen, setMenuOpen] = useState(false);
+    const [searchOpen, setSearchOpen] = useState(false);
+    const [cartOpen, setCartOpen] = useState(false);
+    const { addToCart } = useCart();
+
+    const INGREDIENT_NOTES = [
+        { key: 'skinType', title: 'Tipo de Piel' },
+        { key: 'concern', title: 'Preocupación' },
+        { key: 'irritation', title: 'Irritación' },
+    ];
+
+    const handleAddToCart = async () => {
+        if (!selectedOptionId) return;
+        const success = await addToCart(selectedOptionId, 1);
+        if (success) {
+            setCartOpen(true);
+        }
+    };
+
+    const selectedOption = product?.options?.find(opt => opt.optionId === selectedOptionId);
+        useEffect(() => {
+            fetch(`http://localhost:8080/api/products/${productCode}`)
+            .then(res => res.json())
+            .then(data => {
+                setProduct(data);
+            })
+            .catch(err => {
+                console.error("KMUA Detail API Error:", err);
+            });
+            window.scrollTo(0, 0);
+        }, [productCode]);
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
+    if (!product || !product.options) {
+        return <div style={{ padding: '100px', textAlign: 'center' }}>Cargando...</div>;
     }
-  ]);
+  
+    return (
+        <div className={css(styles.container)}>
+        <Header
+            onMenuClick={() => setMenuOpen(true)}
+            onSearchClick={() => setSearchOpen(true)}
+            onCartClick={() => setCartOpen(true)}
+        />
 
-  const handleUpdateQuantity = (itemId, delta) => {
-    setCartItems(items =>
-      items.map(item =>
-        item.id === itemId
-          ? { ...item, quantity: Math.max(1, item.quantity + delta) }
-          : item
-      )
-    );
-  };
+        <SideMenu
+            isOpen={menuOpen}
+            onClose={() => setMenuOpen(false)}
+        />
 
-  const handleRemoveItem = (itemId) => {
-    setCartItems(items => items.filter(item => item.id !== itemId));
-  };
+        <SearchComponent
+            isOpen={searchOpen}
+            onClose={() => setSearchOpen(false)}
+        />
 
-  const handleAddToCart = () => {
-    setCartOpen(true);
-  };
+        <CartComponent
+            isOpen={cartOpen}
+            onClose={() => setCartOpen(false)}
+        />
 
-  // 샘플 제품 데이터 (실제로는 props나 API에서 가져와야 함)
-  const product = {
-    id: id,
-    name: 'Celadix IRX131 Ampoule',
-    price: '52,000',
-    image: 'https://images.unsplash.com/photo-1643379850623-7eb6442cd262?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWF1dHklMjBjb3NtZXRpY3MlMjBjcmVhbSUyMGJvdHRsZXxlbnwxfHx8fDE3NjYzMDczNzN8MA&ixlib=rb-4.1.0&q=80&w=1080',
-    usage: [
-      'Fortalece la barrera cutánea y mejora la humedad',
-      'Mejora eficazmente los problemas de la piel flácida',
-      'Suaviza la piel con cuidados dermatológicos',
-      'Apto para todo tipo de piel'
-    ],
-    description: [
-      'Formulado con ingredientes naturales de alta calidad para una piel radiante.',
-      'Clínicamente probado para mejorar la elasticidad y firmeza de la piel.',
-      'Libre de parabenos, sulfatos y fragancias artificiales.'
-    ],
-    recentProducts: [
-      {
-        id: 1,
-        name: 'Serum Facial Glow',
-        price: '20,00',
-        image: 'https://images.unsplash.com/photo-1643379850623-7eb6442cd262?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxiZWF1dHklMjBjb3NtZXRpY3MlMjBjcmVhbSUyMGJvdHRsZXxlbnwxfHx8fDE3NjYzMDczNzN8MA&ixlib=rb-4.1.0&q=80&w=1080'
-      },
-      {
-        id: 2,
-        name: 'Crema Hidratante',
-        price: '32,00',
-        image: 'https://images.unsplash.com/photo-1718490953028-021d352b14fd?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxza2luY2FyZSUyMHByb2R1Y3RzJTIwYmVpZ2V8ZW58MXx8fHwxNzY2MzA3MzczfDA&ixlib=rb-4.1.0&q=80&w=1080'
-      }
-    ]
-  };
+        <main className={css(styles.main)}>
+            <div className={css(styles.mainContainer)}>
+            <div className={css(styles.productImageContainer)}>
+                <img
+                src={product.imageUrl}
+                alt={product.name}
+                className={css(styles.productImage)}
+                />
+            </div>
 
-  // 페이지 전환 시 스크롤 최상단으로 초기화
-  useEffect(() => {
-    window.scrollTo(0, 0);
-  }, []);
+            <div className={css(styles.productInfo)}>
+                <h1 className={css(styles.productName)}>{product.name}</h1>
+                <p className={css(styles.productPrice)}>
+                MX$ {selectedOption ? selectedOption.priceMxn : product.options[0].priceMxn}
+                </p>
 
-  return (
-    <div className={css(styles.container)}>
-      <Header
-        onMenuClick={() => setMenuOpen(true)}
-        onSearchClick={() => setSearchOpen(true)}
-        onCartClick={() => setCartOpen(true)}
-      />
-
-      <SideMenu
-        isOpen={menuOpen}
-        onClose={() => setMenuOpen(false)}
-      />
-
-      <SearchComponent
-        isOpen={searchOpen}
-        onClose={() => setSearchOpen(false)}
-      />
-
-      <CartComponent
-        isOpen={cartOpen}
-        onClose={() => setCartOpen(false)}
-        cartItems={cartItems}
-        onUpdateQuantity={handleUpdateQuantity}
-        onRemoveItem={handleRemoveItem}
-      />
-
-      <main className={css(styles.main)}>
-        <div className={css(styles.mainContainer)}>
-          {/* 제품 이미지 */}
-          <div className={css(styles.productImageContainer)}>
-            <img
-              src={product.image}
-              alt={product.name}
-              className={css(styles.productImage)}
-            />
-          </div>
-
-          {/* 제품 정보 */}
-          <div className={css(styles.productInfo)}>
-            <h1 className={css(styles.productName)}>{product.name}</h1>
-            <p className={css(styles.productPrice)}>$ {product.price}</p>
-
-            {/* 사용법 항목 */}
+            {/* 사용법 항목 (Inline List)
             <ul className={css(styles.usageListInline)}>
-              {product.usage.map((item, index) => (
-                <li key={index} className={css(styles.usageItemInline)}>
-                  {item}
+            {(product.longDescription || "").split('\n').map((item, index) => (
+                item.trim() && (
+                <li key={`usage-${index}`} className={css(styles.usageItemInline)}>
+                    {item}
                 </li>
-              ))}
-            </ul>
+                )
+            ))}
+            </ul> */}
+
+            <div className={css(styles.optionSection)}>
+            {product.options.map((option) => (
+                <label
+                key={option.optionId}
+                className={css(
+                    styles.optionLabel,
+                    selectedOptionId === option.optionId && styles.optionLabelSelected
+                )}
+                >
+                <input
+                    type="radio"
+                    name="productOption"
+                    value={option.optionId}
+                    checked={selectedOptionId === option.optionId}
+                    onChange={() => {}}
+                    onClick={() => setSelectedOptionId(prev => prev === option.optionId ? null : option.optionId)}
+                    className={css(styles.optionRadio)}
+                />
+                <span className={css(styles.optionRadioCustom,
+                    selectedOptionId === option.optionId && styles.optionRadioCustomSelected
+                )} />
+                <span className={css(styles.optionText)}>
+                    {option.optionName || `Opción ${option.optionId}`}
+                </span>
+                <span className={css(styles.optionPrice)}>$ {option.priceMxn}</span>
+                </label>
+            ))}
+            </div>
 
             {/* 구매 버튼 */}
-            <button className={css(styles.buyButton)} onClick={handleAddToCart}>
-              COMPRAR AHORA
+            <button
+            className={css(styles.buyButton, !selectedOptionId && styles.buyButtonDisabled)}
+            onClick={handleAddToCart}
+            disabled={!selectedOptionId}
+            >
+            COMPRAR AHORA
             </button>
 
             {/* 장바구니 */}
             <div className={css(styles.cartContainer)} onClick={handleAddToCart}>
-              <MdFavoriteBorder size={20} color="#333" />
-              <span className={css(styles.cartText)}>Carrito de compras</span>
+            <MdFavoriteBorder size={20} color="#333" />
+            <span className={css(styles.cartText)}>Carrito de compras</span>
             </div>
-          </div>
+        </div>
 
-          {/* 사용 방법 */}
-          <div className={css(styles.section)}>
+            {/* 사용 방법 (Modo de uso) */}
+            <div className={css(styles.section)}>
             <h2 className={css(styles.sectionTitle)}>Modo de uso</h2>
             <div className={css(styles.thickDivider)} />
             <div className={css(styles.descriptionContainer)}>
-              <div className={css(styles.descriptionContent)}>
-                {product.description.map((item, index) => (
-                  <p key={index} className={css(styles.descriptionItem)}>
-                    {item}
-                  </p>
-                ))}
-              </div>
+                <div className={css(styles.descriptionContent)}>
+                {(product.longDescription || "")
+                    .split('\n')
+                    .filter(item => item.trim() !== "")
+                    .map((item, index) => (
+                    <p key={`desc-${index}`} className={css(styles.descriptionItem)}>
+                        {item}
+                    </p>
+                    ))}
+                </div>
             </div>
-          </div>
+            </div>
 
-          {/* 최근 본 제품 */}
-          <div className={css(styles.recentSection)}>
+        {/* 성분 노트 (Ingredientes) */}
+        <div className={css(styles.section)}>
+            {INGREDIENT_NOTES.map((note, index) => {
+            const noteData = product[note.key];
+            if (!noteData) return null;
+            return (
+                <div key={note.key} className={css(styles.ingredientNoteItem)}>
+                <h3 className={css(styles.ingredientNoteTitle)}>{note.title}</h3>
+                <p className={css(styles.ingredientNoteText)}>{noteData}</p>
+                {index !== 2 && <div className={css(styles.thinDivider)} />}
+                </div>
+            );
+            })}
+        </div>
+
+        {/* 최근 본 제품 */}
+        <div className={css(styles.recentSection)}>
             <h2 className={css(styles.recentTitle)}>Productos vistos recientemente</h2>
             <div className={css(styles.thickDivider)} />
 
-            <div className={css(styles.recentGrid)}>
-              {product.recentProducts.map((item) => (
+            {/* <div className={css(styles.recentGrid)}>
+            {product.recentProducts.map((item) => (
                 <div key={item.id} className={css(styles.recentCard)}>
-                  <div className={css(styles.recentImageContainer)}>
+                <div className={css(styles.recentImageContainer)}>
                     <img
-                      src={item.image}
-                      alt={item.name}
-                      className={css(styles.recentImage)}
+                    src={item.image}
+                    alt={item.name}
+                    className={css(styles.recentImage)}
                     />
-                  </div>
-                  <p className={css(styles.recentName)}>{item.name}</p>
-                  <p className={css(styles.recentPrice)}>${item.price}</p>
                 </div>
-              ))}
-            </div>
-          </div>
+                <p className={css(styles.recentName)}>{item.name}</p>
+                <p className={css(styles.recentPrice)}>${item.price}</p>
+                </div>
+            ))}
+            </div> */}
         </div>
-      </main>
+        </div>
+    </main>
 
-      <Footer />
+    <Footer />
     </div>
-  );
+    );
 };
 
 const styles = StyleSheet.create({
@@ -306,6 +324,97 @@ const styles = StyleSheet.create({
     marginBottom: '12px',
   },
 
+  thinDivider: {
+    width: '100%',
+    height: '1px',
+    backgroundColor: '#B89F9F',
+    marginTop: '16px',   // 선 위쪽 여백 (전 문단과의 간격)
+    marginBottom: '16px',// 선 아래쪽 여백 (다음 문단과의 간격)
+  },
+
+  optionSection: {
+    marginBottom: '16px',
+  },
+
+  optionLabel: {
+    display: 'flex',
+    alignItems: 'center',
+    padding: '12px 14px',
+    border: '1px solid #D9D0C7',
+    borderRadius: '8px',
+    marginBottom: '8px',
+    cursor: 'pointer',
+    backgroundColor: '#FFFFFF',
+    transition: `border-color ${ANIMATION_DURATION.normal} ${ANIMATION_EASING.ease}, background-color ${ANIMATION_DURATION.normal} ${ANIMATION_EASING.ease}`,
+  },
+
+  optionLabelSelected: {
+    borderColor: '#FF7F50',
+    backgroundColor: '#FFF8F5',
+  },
+
+  optionRadio: {
+    display: 'none',
+  },
+
+  optionRadioCustom: {
+    width: '18px',
+    height: '18px',
+    minWidth: '18px',
+    borderRadius: '50%',
+    border: '2px solid #C4B8AE',
+    marginRight: '12px',
+    position: 'relative',
+    transition: `border-color ${ANIMATION_DURATION.normal} ${ANIMATION_EASING.ease}`,
+    '::after': {
+      content: '""',
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: '8px',
+      height: '8px',
+      borderRadius: '50%',
+      backgroundColor: 'transparent',
+      transition: `background-color ${ANIMATION_DURATION.normal} ${ANIMATION_EASING.ease}`,
+    },
+  },
+
+  optionRadioCustomSelected: {
+    borderColor: '#FF7F50',
+    '::after': {
+      content: '""',
+      position: 'absolute',
+      top: '50%',
+      left: '50%',
+      transform: 'translate(-50%, -50%)',
+      width: '8px',
+      height: '8px',
+      borderRadius: '50%',
+      backgroundColor: '#FF7F50',
+    },
+  },
+
+  optionText: {
+    fontSize: '13px',
+    color: '#333',
+    flex: 1,
+  },
+
+  optionPrice: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#333',
+  },
+
+  buyButtonDisabled: {
+    backgroundColor: '#C4B8AE',
+    cursor: 'not-allowed',
+    ':hover': {
+      backgroundColor: '#C4B8AE',
+    },
+  },
+
   usageListInline: {
     margin: 0,
     marginBottom: '16px',
@@ -318,6 +427,36 @@ const styles = StyleSheet.create({
     color: '#666',
     lineHeight: '1.6',
     marginBottom: '6px',
+    textAlign: 'left',
+  },
+
+  ingredientNoteItem: {
+    marginTop: 0,
+    marginBottom: 0,
+    paddingTop: 0,   // 추가: 패딩도 초기화
+    paddingBottom: 0,
+    width: '100%',
+    display: 'flex', // 레이아웃 강제 정렬
+    flexDirection: 'column',
+  },
+
+  ingredientNoteTitle: {
+    fontSize: '13px',
+    fontWeight: '600',
+    color: '#333',
+    margin: 0,       // 핵심: 상하좌우 모든 마진 제거
+    padding: 0,
+    textAlign: 'left',
+    lineHeight: '1.2', // 행간 최적화
+  },
+
+  ingredientNoteText: {
+    fontSize: '13px',
+    color: '#666',
+    lineHeight: '1.6',
+    margin: 0,       // 핵심: p 태그의 기본 마진 제거
+    padding: 0,
+    marginTop: '4px', // 타이틀과 텍스트 사이의 최소 간격만 허용
     textAlign: 'left',
   },
 
