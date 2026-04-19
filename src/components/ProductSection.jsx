@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { StyleSheet, css } from 'aphrodite';
 import { MdShoppingCart } from 'react-icons/md';
 import { ANIMATION_DURATION, ANIMATION_EASING } from '../hooks/useAnimation';
+import defaultImage from '../assets/images/product6.png';
 
 const ITEMS_PER_PAGE = 12;
 
@@ -13,7 +14,7 @@ const ProductCard = ({ product }) => {
     const handleClick = () => {
         navigate(`/product/${product.productCode}`);
     };
-
+console.log('URL:', product.imageUrl, 'Default:', defaultImage)
     return (
         <div
         className={css(styles.productCard)}
@@ -25,6 +26,10 @@ const ProductCard = ({ product }) => {
             <img
             src={product.imageUrl}
             alt={product.name}
+            onError={(e) => {
+                e.target.onerror = null; 
+                e.target.src = defaultImage;
+            }}
             className={css(
                 styles.productImage,
                 isHovered && styles.productImageHovered

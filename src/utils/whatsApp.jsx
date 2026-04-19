@@ -7,7 +7,7 @@ export const getWhatsAppOrderLink = (orderUuid, orderNumber) => {
     const orderUrl = `${baseUrl}/order-complete/${orderUuid}`;
     
     const message = 
-        `¡Hola KMUA! 🇲🇽🇰🇷\n\n` +
+        `¡Hola KMUA!\n\n` +
         `Comparto los detalles de mi pedido para tenerlos a la mano:\n` +
         `• Nº de pedido: ${orderNumber}\n` +
         `• Ver detalles: ${orderUrl}\n\n` +
