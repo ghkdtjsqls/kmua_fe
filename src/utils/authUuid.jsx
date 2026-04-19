@@ -1,7 +1,7 @@
 import { v4 as uuidv4 } from 'uuid';
 
 const GUEST_ID_KEY = 'kmua_guest_id';
-const EXPIRY_MS = 1 * 60 * 60 * 1000;
+const EXPIRY_MS = 24 * 60 * 60 * 1000;
 
 export const getOrCreateGuestId = () => {
     const itemStr = localStorage.getItem(GUEST_ID_KEY);

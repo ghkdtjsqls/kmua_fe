@@ -6,6 +6,7 @@ import Header from '../components/header';
 import { ANIMATION_DURATION, ANIMATION_EASING } from '../hooks/useAnimation';
 import { getOrCreateGuestId } from '../utils/authUuid';
 import useCart from '../hooks/useCart';
+import * as PortOne from "@portone/browser-sdk/v2";
 
 const ShippingAddressPage = () => {
     const navigate = useNavigate();
@@ -51,50 +52,78 @@ const ShippingAddressPage = () => {
         }));
     };
 
-        const handleSubmit = async (e) => {
-            e.preventDefault();
-            setSubmitted(true);
-            if (!isFormValid) return;
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        setSubmitted(true);
+        if (!isFormValid) return;
 
-            const orderRequest = {
-                ...formData,
-                totalAmount: preview?.totalAmount,
-                guestUuid: getOrCreateGuestId(),
-                orderItemRequests: cartData.items.map(item => ({
-                    optionId: item.optionId,
-                    quantity: item.quantity
-                })),
-            };
-
-            try {
-                const response = await fetch("https://kmua.com.mx/api/orders", {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-Guest-Uuid': getOrCreateGuestId()
-                    },
-                    body: JSON.stringify(orderRequest)
-                });
-
-                if (!response.ok) {
-                    const errorData = await response.json();
-                    alert(`Error: ${errorData.message}`);
-                    return;
-                }
-
-                const orderResponse = await response.json();
-                if (orderResponse.redirectUrl) {
-                    //window.location.href = orderResponse.redirectUrl;
-                    navigate(`/order-complete/${orderResponse.orderUuid}`);
-                } else {
-                    alert("No se pudo generar el enlace. (Falta la URL)");
-                }
-
-            } catch (error) {
-                console.error("Order Creation Failed:", error);
-                alert("Hubo un problema al procesar tu pedido.");
-            }
+        const orderRequest = {
+            ...formData,
+            totalAmount: preview?.totalAmount,
+            guestUuid: getOrCreateGuestId(),
+            orderItemRequests: cartData.items.map(item => ({
+                optionId: item.optionId,
+                quantity: item.quantity
+            })),
         };
+
+        try {
+            const response = await fetch("http://localhost:8080/api/orders", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Guest-Uuid': getOrCreateGuestId()
+                },
+                body: JSON.stringify(orderRequest)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                alert(`Error: ${errorData.message}`);
+                return;
+            }
+
+            const orderResponse = await response.json(); 
+
+            const paymentResponse = await window.PortOne.requestPayment({
+                storeId: import.meta.env.VITE_PORTONE_STORE_ID,
+                channelKey: import.meta.env.VITE_PORTONE_CHANNEL_KEY,
+                paymentId: orderResponse.orderNumber,
+                orderName: orderResponse.summaryItemName || "KMUA Order", 
+                totalAmount: orderResponse.totalAmount,
+                currency: "CURRENCY_MXN",
+                payMethod: "PAYPAL",
+                redirectUrl: `${window.location.origin}/payment-redirect`,
+            });
+
+            if (paymentResponse.code !== undefined) {
+                alert(`Pago cancelado o fallido: ${paymentResponse.message}`);
+                return;
+            }
+
+            const verifyResponse = await fetch("http://localhost:8080/api/orders/verify", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-Guest-Uuid': getOrCreateGuestId()
+                },
+                body: JSON.stringify({
+                    paymentId: orderResponse.orderNumber
+                })
+            });
+
+            if (!verifyResponse.ok) {
+                alert("No se pudo verificar el pago. Si el monto fue descontado, por favor contacte a soporte.");
+                return;
+            }
+
+            navigate(`/order-complete/${orderResponse.orderNumber}`);
+
+        } catch (error) {
+            console.error("Proceso de pago fallido:", error);
+            alert("Hubo un problema al procesar tu pedido. Inténtalo de nuevo.");
+        }
+    };
 
     useEffect(() => {
         window.scrollTo(0, 0);

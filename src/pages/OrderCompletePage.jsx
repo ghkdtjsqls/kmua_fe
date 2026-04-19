@@ -7,6 +7,7 @@ import Header from '../components/header';
 import Shoppingbags from '../assets/images/Shopping bags illustration.png';
 import { ANIMATION_DURATION, ANIMATION_EASING, spinKeyframes } from '../hooks/useAnimation';
 import { getWhatsAppOrderLink } from '../utils/whatsApp';
+import defaultImage from '../assets/images/product6.png';
 
 const MAX_RETRIES = 5;
 const POLL_INTERVAL_MS = 2500;
@@ -245,8 +246,12 @@ const OrderCompletePage = () => {
           {orderData.orderProducts.map((item, index) => (
             <div key={index} className={css(styles.orderItem)}>
               <img
-                src={item.imageUrl}
+                src={item.imageUrl || defaultImage}
                 alt={item.productName}
+                onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = defaultImage;
+                }}
                 className={css(styles.itemImage)}
               />
               <div className={css(styles.itemDetails)}>

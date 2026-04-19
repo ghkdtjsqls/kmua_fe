@@ -9,6 +9,7 @@ import SearchComponent from '../components/SearchComponent';
 import CartComponent from '../components/CartComponent';
 import { ANIMATION_DURATION, ANIMATION_EASING } from '../hooks/useAnimation';
 import useCart from '../hooks/useCart';
+import defaultImage from '../assets/images/product6.png';
 
 
 const ProductDetailPage = () => {
@@ -84,6 +85,10 @@ const ProductDetailPage = () => {
                 <img
                 src={product.imageUrl}
                 alt={product.name}
+                onError={(e) => {
+                    e.target.onerror = null; 
+                    e.target.src = defaultImage;
+                }}
                 className={css(styles.productImage)}
                 />
             </div>

@@ -42,12 +42,12 @@ const MainPage = () => {
             onCartClick={() => setCartOpen(true)}
         />
 
-        {/* <SideMenu
+        <SideMenu
             isOpen={menuOpen}
             onClose={() => setMenuOpen(false)}
         />
 
-        <SearchComponent
+        {/* <SearchComponent
             isOpen={searchOpen}
             onClose={() => setSearchOpen(false)}
         /> */}

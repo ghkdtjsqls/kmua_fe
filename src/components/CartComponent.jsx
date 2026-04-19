@@ -4,6 +4,7 @@ import { StyleSheet, css } from 'aphrodite';
 import { MdClose, MdDelete } from 'react-icons/md';
 import { useFadeAnimation, animationStyles } from '../hooks/useAnimation';
 import useCart from '../hooks/useCart';
+import defaultImage from '../assets/images/product6.png';
 
 const CartComponent = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
@@ -73,6 +74,10 @@ const CartComponent = ({ isOpen, onClose }) => {
                         <img
                             src={item.imageUrl}
                             alt={item.productName}
+                            onError={(e) => {
+                                e.target.onerror = null; 
+                                e.target.src = defaultImage;
+                            }}
                             className={css(styles.itemImage)}
                         />
                         </div>

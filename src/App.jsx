@@ -9,6 +9,7 @@ import OrderCompletePage from './pages/OrderCompletePage';
 import ShippingCheckPage from './pages/ShippingCheckPage';
 import CategoryPage from './pages/CategoryPage';
 import PolicyPage from './pages/PolicyPage';
+import PaymentRedirectPage from './pages/PaymentRedirectPage';
 
 function App() {
     return (
@@ -24,6 +25,7 @@ function App() {
                             <Route path="/order-complete/:orderUuid" element={<OrderCompletePage />} />
                             <Route path="/shipping-check" element={<ShippingCheckPage />} />
                             <Route path="/:category/:subcategory" element={<CategoryPage />} />
+                            <Route path="/payment-redirect" element={<PaymentRedirectPage />} />
                         </Routes>
                     </BrowserRouter>
                 </CartProvider>
