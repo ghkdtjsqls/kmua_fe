@@ -6,7 +6,7 @@ import { MdOutlineError } from 'react-icons/md';
 import Header from '../components/header';
 import Shoppingbags from '../assets/images/Shopping bags illustration.png';
 import { ANIMATION_DURATION, ANIMATION_EASING, spinKeyframes } from '../hooks/useAnimation';
-import { getWhatsAppOrderLink } from '../utils/whatsApp';
+import { getWhatsAppOrderLink, getWhatsAppAskLink } from '../utils/whatsApp';
 import defaultImage from '../assets/images/product6.png';
 
 const MAX_RETRIES = 5;
@@ -14,7 +14,7 @@ const POLL_INTERVAL_MS = 2500;
 
 const OrderCompletePage = () => {
     const navigate = useNavigate();
-    const {orderUuid} = useParams();
+    const {orderNumber} = useParams();
 
     const [orderData, setOrderData] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -27,7 +27,7 @@ const OrderCompletePage = () => {
 
 
     useEffect(() => {
-        if (!orderUuid) {
+        if (!orderNumber) {
             setLoading(false);
             return;
         }
@@ -37,10 +37,10 @@ const OrderCompletePage = () => {
         let currentRetry = 0;
 
         const fetchOrder = async () => {
-        console.log(`조회 시도 (${currentRetry}/${MAX_RETRIES}) - UUID:`, orderUuid);
+        console.log(`조회 시도 (${currentRetry}/${MAX_RETRIES}) - UUID:`, orderNumber);
         try {
             const { data } = await axios.get(
-            `https://kmua.com.mx/api/orders/${orderUuid}/complete`
+            `http://localhost:8080/api/orders/${orderNumber}/complete`
             );
             
             if (!isMounted) return;
@@ -50,18 +50,18 @@ const OrderCompletePage = () => {
 
             if (data.orderStatus === 'PENDING') {
             
-            if (data.paymentMethod === 'oxxo') {
-                console.log("OXXO 결제 감지: 폴링을 중단하고 안내 화면을 유지합니다.");
-                return; 
-            }
+                if (data.paymentMethod === 'whatsapp') {
+                    console.log("whatsapp 결제 감지: 폴링을 중단하고 안내 화면을 유지합니다.");
+                    return; 
+                }
 
-            if (currentRetry < MAX_RETRIES) {
-                currentRetry += 1;
-                setRetryCount(currentRetry);
-                timeoutId = setTimeout(fetchOrder, POLL_INTERVAL_MS);
-            } else {
-                setPollingExhausted(true);
-            }
+                if (currentRetry < MAX_RETRIES) {
+                    currentRetry += 1;
+                    setRetryCount(currentRetry);
+                    timeoutId = setTimeout(fetchOrder, POLL_INTERVAL_MS);
+                } else {
+                    setPollingExhausted(true);
+                }
             }
         } catch (error) {
             if (!isMounted) return;
@@ -76,7 +76,7 @@ const OrderCompletePage = () => {
         isMounted = false;
         if (timeoutId) clearTimeout(timeoutId);
         };
-    }, [orderUuid]);
+    }, [orderNumber]);
 
     const formatDate = (dateString) => {
         const date = new Date(dateString);
@@ -123,33 +123,39 @@ const OrderCompletePage = () => {
 
     // ── PENDING ───────────────────────────────────────────────────────────────
         if (orderStatus === 'PENDING') {
-            if (orderData.paymentMethod?.toLowerCase() === 'oxxo') {
+            if (orderData.paymentMethod?.toLowerCase() === 'whatsapp') {
             return (
                 <div className={css(styles.container)}>
                 <Header showMenu={false} showNav={false} showSearch={false} showCart={false} showShip={true} />
                 <main className={css(styles.main)}>
-                    <h2 className={css(styles.title)}>¡Casi listo!</h2>
+                    <h2 className={css(styles.title)}>Información sobre tu pago</h2>
                     <div className={css(styles.illustrationContainer)}>
                     <img src={Shoppingbags} alt="OXXO Wait" className={css(styles.illustrationImage)} />
                     </div>
-                    <p className={css(styles.pendingText)}>Paga tu pedido en OXXO.</p>
+                    <p className={css(styles.pendingText)}>¿Ya realizaste tu transferencia?</p>
                     <p className={css(styles.pendingSubText)}>
-                    Descarga el voucher y págalo en cualquier tienda OXXO.
-                    Confirmaremos tu pedido pronto.
+                        Una vez validado, tu paquete será enviado desde Corea y 
+                        llegará a tu puerta en un periodo de 2 a 4 semanas.
                     </p>
                     
                     <div className={css(styles.buttonContainer)}>
                     <button 
-                        className={css(styles.statusButton)} 
-                        onClick={() => window.open(orderData.voucherUrl, '_blank')}
+                        className={css(styles.cancelButton)} 
+                        onClick={() => window.open(getWhatsAppAskLink(), '_blank')}
                     >
-                        Descargar Voucher OXXO
+                        Aún no, tengo una duda
                     </button>
                     <button 
                         className={css(styles.whatsappButton)}
-                        onClick={() => window.open(getWhatsAppOrderLink(orderData.orderUuid, orderData.orderNumber), '_blank')}
+                        onClick={() => window.open(getWhatsAppOrderLink(orderData.orderNumber), '_blank')}
                     >
-                        Guardar en WhatsApp
+                        Sí, ya pagué (Enviar comprobante)
+                    </button>
+                    <button
+                        className={css(styles.exploreButton)}
+                        onClick={() => navigate('/')}
+                    >
+                        Seguir explorando
                     </button>
                     </div>
                 </main>
@@ -479,6 +485,21 @@ const styles = StyleSheet.create({
         width: '80%',
         padding: '14px',
         backgroundColor: '#D4C5C5',
+        color: '#FFFFFF',
+        border: 'none',
+        borderRadius: '20px',
+        fontSize: '14px',
+        fontWeight: '500',
+        cursor: 'pointer',
+        transition: `background-color ${ANIMATION_DURATION.normal} ${ANIMATION_EASING.ease}`,
+        ':hover': {
+        backgroundColor: '#C4B5B5',
+        },
+    },
+    cancelButton: {
+        width: '80%',
+        padding: '14px',
+        backgroundColor: '#A68B8B',
         color: '#FFFFFF',
         border: 'none',
         borderRadius: '20px',

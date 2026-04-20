@@ -22,7 +22,7 @@ function App() {
                             <Route path="/bannerPage" element={<BannerPage />} />
                             <Route path="/product/:productCode" element={<ProductDetailPage />} />
                             <Route path="/shipping" element={<ShippingAddressPage />} />
-                            <Route path="/order-complete/:orderUuid" element={<OrderCompletePage />} />
+                            <Route path="/order-complete/:orderNumber" element={<OrderCompletePage />} />
                             <Route path="/shipping-check" element={<ShippingCheckPage />} />
                             <Route path="/:category/:subcategory" element={<CategoryPage />} />
                             <Route path="/payment-redirect" element={<PaymentRedirectPage />} />
