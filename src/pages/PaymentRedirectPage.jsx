@@ -28,7 +28,7 @@ const PaymentRedirectPage = () => {
                 const guestUuid = getOrCreateGuestId();
                 console.log("검증 시도 - UUID:", guestUuid, "PID:", paymentId);
 
-                const response = await fetch("http://localhost:8080/api/orders/verify", {
+                const response = await fetch("https://kmua.com.mx/api/orders/verify", {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',

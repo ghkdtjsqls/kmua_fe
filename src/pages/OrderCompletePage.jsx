@@ -40,7 +40,7 @@ const OrderCompletePage = () => {
         console.log(`조회 시도 (${currentRetry}/${MAX_RETRIES}) - UUID:`, orderNumber);
         try {
             const { data } = await axios.get(
-            `http://localhost:8080/api/orders/${orderNumber}/complete`
+            `https://kmua.com.mx/api/orders/${orderNumber}/complete`
             );
             
             if (!isMounted) return;
