@@ -7,6 +7,7 @@ import { ANIMATION_DURATION, ANIMATION_EASING } from '../hooks/useAnimation';
 import { getOrCreateGuestId } from '../utils/authUuid';
 import useCart from '../hooks/useCart';
 import * as PortOne from "@portone/browser-sdk/v2";
+import { getWhatsAppPayLink } from '../utils/whatsApp';
 
 const ShippingAddressPage = () => {
     const navigate = useNavigate();
@@ -30,6 +31,7 @@ const ShippingAddressPage = () => {
     });
 
     const [submitted, setSubmitted] = useState(false);
+    const [paymentMethod, setPaymentMethod] = useState(null);
 
     const requiredFields = [
         'phone', 'email', 'country', 'firstName', 
@@ -55,10 +57,11 @@ const ShippingAddressPage = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         setSubmitted(true);
-        if (!isFormValid) return;
+        if (!isFormValid || !paymentMethod) return;
 
         const orderRequest = {
             ...formData,
+            paymentMethod: paymentMethod,
             totalAmount: preview?.totalAmount,
             guestUuid: getOrCreateGuestId(),
             orderItemRequests: cartData.items.map(item => ({
@@ -83,13 +86,22 @@ const ShippingAddressPage = () => {
                 return;
             }
 
-            const orderResponse = await response.json(); 
+            const orderResponse = await response.json();
+            const finalOrderResponse = orderResponse.paymentMethod;
+
+            if (finalOrderResponse === 'whatsapp') {
+                const link = getWhatsAppPayLink(orderResponse.orderNumber, formData, preview?.totalAmount);
+                window.open(link, '_blank');
+
+                navigate(`/order-complete/${orderResponse.orderNumber}`);
+                return;
+            }
 
             const paymentResponse = await window.PortOne.requestPayment({
                 storeId: import.meta.env.VITE_PORTONE_STORE_ID,
                 channelKey: import.meta.env.VITE_PORTONE_CHANNEL_KEY,
                 paymentId: orderResponse.orderNumber,
-                orderName: orderResponse.summaryItemName || "KMUA Order", 
+                orderName: orderResponse.summaryItemName || "KMUA Order",
                 totalAmount: orderResponse.totalAmount,
                 currency: "CURRENCY_MXN",
                 payMethod: "PAYPAL",
@@ -287,28 +299,26 @@ const ShippingAddressPage = () => {
                 />
             </section>
 
-            {/* Pago Section */}
-            {/* <section className={css(styles.section, styles.pagoSection)}>
-                <h2 className={css(styles.sectionTitle)}>Pago</h2>
-                <div className={css(styles.paymentBox)}>
-                <span className={css(styles.paymentLabel)}>Mercado Page</span>
-                <div className={css(styles.paymentContent)}>
-                    <div className={css(styles.cardDesign)}>
-                    <div className={css(styles.cardChip)}>
-                        <div className={css(styles.chipLine)} />
-                        <div className={css(styles.chipLine)} />
-                        <div className={css(styles.chipLine)} />
-                    </div>
-                    <div className={css(styles.cardWave)}>
-                        <MdCreditCard size={24} color="#4A90D9" />
-                    </div>
-                    </div>
-                    <p className={css(styles.paymentDescription)}>
-                    Después de hacer clic en "Pagar con PayPal", se te redirigirá a PayPal para completar tu compra de forma segura.
-                    </p>
-                </div>
-                </div>
-            </section> */}
+            {/* Payment Method Section */}
+            <section className={css(styles.section)}>
+                <h2 className={css(styles.sectionTitle)}>Método de pago</h2>
+                <button
+                    type="button"
+                    onClick={() => setPaymentMethod('paypal')}
+                    className={css(styles.methodCard, paymentMethod === 'paypal' && styles.methodCardSelected)}
+                >
+                    <span className={css(styles.methodCardDot, paymentMethod === 'paypal' && styles.methodCardDotSelected)} />
+                    <span className={css(styles.methodCardText)}>Pagar con PayPal</span>
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setPaymentMethod('whatsapp')}
+                    className={css(styles.methodCard, paymentMethod === 'whatsapp' && styles.methodCardSelected)}
+                >
+                    <span className={css(styles.methodCardDot, paymentMethod === 'whatsapp' && styles.methodCardDotSelected)} />
+                    <span className={css(styles.methodCardText)}>Consultar otro método de pago</span>
+                </button>
+            </section>
 
             {/* Summary Section */}
             <section className={css(styles.summarySection)}>
@@ -320,13 +330,13 @@ const ShippingAddressPage = () => {
                 <span className={css(styles.totalLabel)}>total</span>
                 <span className={css(styles.totalValue)}>${preview?.totalAmount ?? '...'}</span>
                 </div>
-                    <button
-                        type="submit"
-                        disabled={!agreed} 
-                        className={css(styles.payButton, !agreed && styles.disabledButton)}
-                        >
-                        Pagar ahora
-                    </button>
+                <button
+                    type="submit"
+                    disabled={!agreed || !paymentMethod}
+                    className={css(styles.payButton, (!agreed || !paymentMethod) && styles.disabledButton)}
+                >
+                    Pagar ahora
+                </button>
             </section>
 
             <div className={css(styles.checkboxContainer)}>
@@ -575,6 +585,47 @@ const styles = StyleSheet.create({
         ':hover': {
         backgroundColor: '#29B6F6',
         },
+    },
+    methodCard: {
+        width: '100%',
+        padding: '14px 16px',
+        backgroundColor: '#FFFFFF',
+        border: '1px solid #D9CFCF',
+        borderRadius: '8px',
+        fontSize: '14px',
+        color: '#666',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        gap: '12px',
+        textAlign: 'left',
+        boxSizing: 'border-box',
+        transition: `border-color ${ANIMATION_DURATION.fast} ${ANIMATION_EASING.ease}, background-color ${ANIMATION_DURATION.fast} ${ANIMATION_EASING.ease}`,
+        ':hover': {
+        borderColor: '#B89F9F',
+        backgroundColor: '#FDF8F6',
+        },
+    },
+    methodCardSelected: {
+        borderColor: '#B89F9F',
+        backgroundColor: '#FDF8F6',
+        color: '#333',
+    },
+    methodCardDot: {
+        width: '16px',
+        height: '16px',
+        borderRadius: '50%',
+        border: '1.5px solid #CCC',
+        flexShrink: 0,
+        transition: `border-color ${ANIMATION_DURATION.fast} ${ANIMATION_EASING.ease}, background-color ${ANIMATION_DURATION.fast} ${ANIMATION_EASING.ease}`,
+    },
+    methodCardDotSelected: {
+        border: '4px solid #B89F9F',
+        backgroundColor: '#FFFFFF',
+    },
+    methodCardText: {
+        fontSize: '13px',
+        fontWeight: '500',
     },
     checkboxContainer: {
         marginTop: '32px', 
