@@ -6,6 +6,8 @@ import { useFadeAnimation, animationStyles } from '../hooks/useAnimation';
 import useCart from '../hooks/useCart';
 import defaultImage from '../assets/images/product6.png';
 
+const CDN_IMAGE_URL = import.meta.env.VITE_CDNIMAGEURL;
+
 const CartComponent = ({ isOpen, onClose }) => {
     const navigate = useNavigate();
     const isRendered = useFadeAnimation(50);
@@ -72,7 +74,7 @@ const CartComponent = ({ isOpen, onClose }) => {
                     <div key={item.cartProductId} className={css(styles.cartItem)}>
                         <div className={css(styles.itemImageContainer)}>
                         <img
-                            src={item.imageUrl}
+                            src={`${CDN_IMAGE_URL}${item.imageUrl}`}
                             alt={item.productName}
                             onError={(e) => {
                                 e.target.onerror = null; 

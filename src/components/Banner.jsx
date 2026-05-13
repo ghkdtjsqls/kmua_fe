@@ -5,15 +5,21 @@ import { ANIMATION_DURATION, ANIMATION_EASING } from '../hooks/useAnimation';
 
 // 배너 이미지 임포트 (1920 x 300 규격)
 import banner2 from '../assets/images/image2.png';
+import banner3 from '../assets/images/image3.png';
 import bannerMobile from '../assets/images/image10.png';
+import bannerMobile2 from '../assets/images/image11.png';
 
 const banners = [
     {
         id: 1,
+        pc: banner2,
+        mobile: bannerMobile,
         link: '/bannerPage',
     },
     {
         id: 2,
+        pc: banner3,
+        mobile: bannerMobile2,
         link: 'https://smore.im/quiz/FMG825iBGo?utm_source=ig&utm_medium=social&utm_content=link_in_bio&fbclid=PAZnRzaAQMphRleHRuA2FlbQIxMQBzcnRjBmFwcF9pZA8xMjQwMjQ1NzQyODc0MTQAAadFDN6ulcImc_ymRE42SvVpSFjCLASZsObp_ZZjbnOFQ4N9dOgp4binEr6KlA_aem_tzgKpiPgyYqvrpefw2pKsw',
     },
 ];
@@ -40,8 +46,8 @@ const Banner = () => {
 
             const BannerContent = (
                 <picture>
-                <source srcSet={banner2} media="(min-width: 768px)" />
-                <img src={bannerMobile} alt="banner" className={css(styles.bannerImage)} />
+                <source srcSet={banner.pc} media="(min-width: 768px)" />
+                <img src={banner.mobile} alt="banner" className={css(styles.bannerImage)} />
                 </picture>
             );
 
