@@ -11,6 +11,7 @@ import defaultImage from '../assets/images/product6.png';
 
 const MAX_RETRIES = 5;
 const POLL_INTERVAL_MS = 2500;
+const CDN_IMAGE_URL = import.meta.env.VITE_CDNIMAGEURL;
 
 const OrderCompletePage = () => {
     const navigate = useNavigate();
@@ -252,7 +253,7 @@ const OrderCompletePage = () => {
           {orderData.orderProducts.map((item, index) => (
             <div key={index} className={css(styles.orderItem)}>
               <img
-                src={item.imageUrl || defaultImage}
+                src={`${CDN_IMAGE_URL}${item.imageUrl}` || defaultImage}
                 alt={item.productName}
                 onError={(e) => {
                     e.target.onerror = null; 

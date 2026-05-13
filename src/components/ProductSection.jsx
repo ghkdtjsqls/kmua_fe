@@ -6,6 +6,7 @@ import { ANIMATION_DURATION, ANIMATION_EASING } from '../hooks/useAnimation';
 import defaultImage from '../assets/images/product6.png';
 
 const ITEMS_PER_PAGE = 12;
+const CDN_IMAGE_URL = import.meta.env.VITE_CDNIMAGEURL;
 
 const ProductCard = ({ product }) => {
     const [isHovered, setIsHovered] = useState(false);
@@ -14,7 +15,7 @@ const ProductCard = ({ product }) => {
     const handleClick = () => {
         navigate(`/product/${product.productCode}`);
     };
-console.log('URL:', product.imageUrl, 'Default:', defaultImage)
+    console.log('URL:', product.imageUrl, 'Default:', defaultImage)
     return (
         <div
         className={css(styles.productCard)}
@@ -24,7 +25,7 @@ console.log('URL:', product.imageUrl, 'Default:', defaultImage)
         >
         <div className={css(styles.productImageContainer)}>
             <img
-            src={product.imageUrl}
+            src={`${CDN_IMAGE_URL}${product.imageUrl}`}
             alt={product.name}
             onError={(e) => {
                 e.target.onerror = null; 

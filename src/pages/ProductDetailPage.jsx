@@ -11,6 +11,7 @@ import { ANIMATION_DURATION, ANIMATION_EASING } from '../hooks/useAnimation';
 import useCart from '../hooks/useCart';
 import defaultImage from '../assets/images/product6.png';
 
+const CDN_IMAGE_URL = import.meta.env.VITE_CDNIMAGEURL;
 
 const ProductDetailPage = () => {
     const { productCode } = useParams();
@@ -83,7 +84,7 @@ const ProductDetailPage = () => {
             <div className={css(styles.mainContainer)}>
             <div className={css(styles.productImageContainer)}>
                 <img
-                src={product.imageUrl}
+                src={`${CDN_IMAGE_URL}${product.imageUrl}`}
                 alt={product.name}
                 onError={(e) => {
                     e.target.onerror = null; 
